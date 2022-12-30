@@ -2,6 +2,7 @@ import { accordion } from './accordion'
 import { button } from './button'
 import { checkbox } from './checkbox'
 import { dialog } from './dialog'
+import { editable } from './editable'
 import { hoverCard } from './hover-card'
 import { input } from './input'
 import { link } from './link'
@@ -22,6 +23,7 @@ export const recipes = {
   button,
   checkbox,
   dialog,
+  editable,
   hoverCard,
   input,
   link,

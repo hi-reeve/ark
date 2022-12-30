@@ -19,6 +19,9 @@ const presets = {
   dialog: {
     component: lazyNamedImport(() => import('./demo/Dialog'), 'DemoDialog'),
   },
+  editable: {
+    component: lazyNamedImport(() => import('./demo/Editable'), 'DemoEditable'),
+  },
   hoverCard: {
     component: lazyNamedImport(() => import('./demo/HoverCard'), 'DemoHoverCard'),
   },
