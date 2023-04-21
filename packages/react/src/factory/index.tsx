@@ -8,14 +8,19 @@ type AsChildProps<Props extends { children?: unknown }> =
   | { asChild: true; children: React.ReactElement }
   | { asChild?: false; children?: Props['children'] }
 
-type WithAs<Props extends { children?: unknown }> = Omit<Props, 'children'> & AsChildProps<Props>
+type WithAsChildProps<Props extends { children?: unknown }> = Omit<Props, 'children'> &
+  AsChildProps<Props>
 
-type JsxFactory<T extends React.ElementType = React.ElementType> = (
+type ComponentWithAsChildProps<T extends React.ElementType> = React.FC<
+  WithAsChildProps<React.ComponentPropsWithRef<T>>
+>
+
+type JsxFactoryFn<T extends React.ElementType = React.ElementType> = (
   component: T,
-) => React.FC<WithAs<React.ComponentPropsWithRef<T>>>
+) => ComponentWithAsChildProps<T>
 
-type HTMLJsxElements = {
-  [K in keyof JSX.IntrinsicElements]: React.FC<WithAs<React.ComponentPropsWithRef<K>>>
+type JsxElements = {
+  [K in keyof JSX.IntrinsicElements]: ComponentWithAsChildProps<K>
 }
 
 function styled(Component: React.ElementType) {
@@ -59,5 +64,5 @@ export function jsxFactory() {
       }
       return cache.get(asElement)
     },
-  }) as unknown as JsxFactory & HTMLJsxElements
+  }) as unknown as JsxFactoryFn & JsxElements
 }
