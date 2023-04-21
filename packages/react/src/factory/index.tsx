@@ -1,40 +1,43 @@
-import {
-  Children,
-  cloneElement,
-  forwardRef,
-  type ComponentProps,
-  type ElementType,
-  type ReactElement,
-} from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-type ComponentWithAsChild<Component extends ElementType> = ReactElement<
-  ComponentProps<Component> & {
-    asChild?: boolean
-  },
-  Component
->
+import { mergeProps } from '@zag-js/react'
+import { Children, cloneElement, forwardRef, isValidElement } from 'react'
+import { composeRefs } from './compose-refs'
 
-type JsxFactory<Component extends ElementType = ElementType> = (
-  el: Component,
-) => ComponentWithAsChild<Component>
+type AsChildProps<Props extends { children?: unknown }> =
+  | { asChild: true; children: React.ReactElement }
+  | { asChild?: false; children?: Props['children'] }
+
+type WithAs<Props extends { children?: unknown }> = Omit<Props, 'children'> & AsChildProps<Props>
+
+type JsxFactory<T extends React.ElementType = React.ElementType> = (
+  component: T,
+) => React.FC<WithAs<React.ComponentPropsWithRef<T>>>
 
 type HTMLJsxElements = {
-  [K in keyof JSX.IntrinsicElements]: ComponentWithAsChild<K>
+  [K in keyof JSX.IntrinsicElements]: React.FC<WithAs<React.ComponentPropsWithRef<K>>>
 }
 
-type AsChildProps =
-  | { asChild: true; children: ReactElement }
-  | { asChild: false; children?: ReactElement }
+function styled(Component: React.ElementType) {
+  const Comp = forwardRef<unknown, AsChildProps<React.ComponentPropsWithRef<React.ElementType>>>(
+    function Styled(props, ref) {
+      const { asChild, ...restProps } = props
 
-function styled(Component: ElementType) {
-  const Comp = forwardRef<unknown, AsChildProps>((props, ref) => {
-    const { asChild, ...restProps } = props
-    if (asChild) {
+      if (!asChild) {
+        return <Component {...restProps} ref={ref} />
+      }
+
       const onlyChild = Children.only(props.children)
-      return cloneElement(onlyChild, { ...restProps, ref })
-    }
-    return <Component {...restProps} ref={ref} />
-  })
+      const forwardedRef = composeRefs(ref, (onlyChild as any).ref)
+
+      return isValidElement(onlyChild)
+        ? cloneElement(onlyChild, {
+            ...mergeProps(restProps, onlyChild.props as any),
+            ref: forwardedRef,
+          })
+        : null
+    },
+  )
 
   // @ts-expect-error - it exists
   Comp.displayName = Component.displayName || Component.name
@@ -42,24 +45,19 @@ function styled(Component: ElementType) {
   return Comp
 }
 
-export function jsxFactory<Component extends ElementType = ElementType>() {
-  const cache = new Map<Component, ComponentWithAsChild<Component>>()
+export function jsxFactory() {
+  const cache = new Map()
 
   return new Proxy(styled, {
-    apply(target, thisArg, argArray: [Component]) {
+    apply(target, thisArg, argArray) {
       return styled(argArray[0])
     },
     get(_, element) {
-      const asElement = element as Component
+      const asElement = element as React.ElementType
       if (!cache.has(asElement)) {
-        //@ts-expect-error - fix later
         cache.set(asElement, styled(asElement))
       }
       return cache.get(asElement)
     },
   }) as unknown as JsxFactory & HTMLJsxElements
 }
-
-const ark = jsxFactory()
-
-const tt = <ark.div>Welcome</ark.div>
