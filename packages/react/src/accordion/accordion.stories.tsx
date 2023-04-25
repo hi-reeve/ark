@@ -7,7 +7,21 @@ export const Basic = () => {
     <Accordion defaultValue="panel-1">
       {items.map((item, id) => (
         <AccordionItem key={id} value={item}>
-          <AccordionTrigger>
+          <AccordionTrigger>{item} trigger</AccordionTrigger>
+          <AccordionContent>{item} content</AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  )
+}
+
+export const WithAsChild = () => {
+  const items = ['panel-1', 'panel-2', 'panel-3']
+  return (
+    <Accordion defaultValue="panel-1">
+      {items.map((item, id) => (
+        <AccordionItem key={id} value={item}>
+          <AccordionTrigger asChild>
             <button>{item} trigger</button>
           </AccordionTrigger>
           <AccordionContent>{item} content</AccordionContent>

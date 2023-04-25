@@ -1,25 +1,14 @@
-import { children, createEffect, type JSX } from 'solid-js'
-import { spread } from '../spread'
-import { ssrSpread } from '../ssr-spread'
+import { combineProps } from '@kobalte/utils'
+import { type JSX } from 'solid-js'
 import { useAccordionContext } from './accordion-context'
 import { useAccordionItemContext } from './accordion-item-context'
+import { ark, type WithAsChildProps } from './factory'
 
-export type AccordionTriggerProps = { children: JSX.Element }
+export type AccordionTriggerProps = WithAsChildProps<{ children: JSX.Element }>
 
 export const AccordionTrigger = (props: AccordionTriggerProps) => {
   const accordion = useAccordionContext()
-  const accordionItem = useAccordionItemContext()
-
-  const triggerProps = accordion().getTriggerProps(accordionItem)
-
-  const getChildren = children(() => ssrSpread(props.children, triggerProps))
-
-  createEffect(() => {
-    const children = getChildren()
-    if (children instanceof HTMLElement) {
-      spread(children, triggerProps)
-    }
-  })
-
-  return getChildren
+  const itemProps = useAccordionItemContext()
+  const mergedProps = combineProps(accordion().getTriggerProps(itemProps), props)
+  return <ark.button {...mergedProps} />
 }

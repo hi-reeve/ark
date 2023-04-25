@@ -8,7 +8,7 @@ type AsChildProps<Props extends { children?: unknown }> =
   | { asChild: true; children: React.ReactElement }
   | { asChild?: false; children?: Props['children'] }
 
-type WithAsChildProps<Props extends { children?: unknown }> = Omit<Props, 'children'> &
+export type WithAsChildProps<Props extends { children?: unknown }> = Omit<Props, 'children'> &
   AsChildProps<Props>
 
 type ComponentWithAsChildProps<T extends React.ElementType> = React.FC<
@@ -23,9 +23,9 @@ type JsxElements = {
   [K in keyof JSX.IntrinsicElements]: ComponentWithAsChildProps<K>
 }
 
-function styled(Component: React.ElementType) {
+function withAsChild(Component: React.ElementType) {
   const Comp = forwardRef<unknown, AsChildProps<React.ComponentPropsWithRef<React.ElementType>>>(
-    function Styled(props, ref) {
+    function ComponentWithAsChild(props, ref) {
       const { asChild, ...restProps } = props
 
       if (!asChild) {
@@ -53,16 +53,18 @@ function styled(Component: React.ElementType) {
 export function jsxFactory() {
   const cache = new Map()
 
-  return new Proxy(styled, {
+  return new Proxy(withAsChild, {
     apply(target, thisArg, argArray) {
-      return styled(argArray[0])
+      return withAsChild(argArray[0])
     },
     get(_, element) {
       const asElement = element as React.ElementType
       if (!cache.has(asElement)) {
-        cache.set(asElement, styled(asElement))
+        cache.set(asElement, withAsChild(asElement))
       }
       return cache.get(asElement)
     },
   }) as unknown as JsxFactoryFn & JsxElements
 }
+
+export const ark = jsxFactory()
