@@ -76,3 +76,5 @@ export function jsxFactory() {
 }
 
 export const ark = jsxFactory()
+
+export type HTMLArkProps<T extends ElementType> = WithAsChildProps<ComponentProps<T>>

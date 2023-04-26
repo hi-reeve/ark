@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { mergeProps } from '@zag-js/react'
-import { Children, cloneElement, forwardRef, isValidElement } from 'react'
+import { Children, forwardRef as __forwardRef, cloneElement, isValidElement } from 'react'
 import { composeRefs } from './compose-refs'
 
 type AsChildProps<Props extends { children?: unknown }> =
@@ -24,7 +24,7 @@ type JsxElements = {
 }
 
 function withAsChild(Component: React.ElementType) {
-  const Comp = forwardRef<unknown, AsChildProps<React.ComponentPropsWithRef<React.ElementType>>>(
+  const Comp = __forwardRef<unknown, AsChildProps<React.ComponentPropsWithRef<React.ElementType>>>(
     function ComponentWithAsChild(props, ref) {
       const { asChild, ...restProps } = props
 
@@ -68,3 +68,21 @@ export function jsxFactory() {
 }
 
 export const ark = jsxFactory()
+
+export type HTMLArkProps<T extends React.ElementType> = ComponentWithAsChildProps<T>
+
+type Pretty<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
+type Assign<T, U> = Pretty<T & Omit<U, keyof T>>
+
+export function forwardRef<
+  T extends React.ElementType,
+  P extends Record<never, never> = Record<never, never>,
+>(
+  component: React.ForwardRefRenderFunction<
+    never,
+    Assign<React.ComponentPropsWithoutRef<T>, P & { asChild?: boolean }>
+  >,
+) {
+  return __forwardRef(component) as unknown as ComponentWithAsChildProps<T>
+}
