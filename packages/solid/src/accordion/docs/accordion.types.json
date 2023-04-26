@@ -54,5 +54,6 @@
   "AccordionItemProps": {
     "value": { "type": "string", "isRequired": true },
     "disabled": { "type": "boolean", "isRequired": false }
-  }
+  },
+  "AccordionTriggerProps": { "asChild": { "type": "boolean", "isRequired": false } }
 }

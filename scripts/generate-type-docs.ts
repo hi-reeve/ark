@@ -146,7 +146,7 @@ const main = async () => {
         const fileContent = await readFile(path.join(component, 'index.ts'), {
           encoding: 'utf8',
         }).catch(() => undefined)
-        return [component, extractTypeExports(fileContent)]
+        return [component, extractTypeExports(fileContent) ?? []]
       }),
     ),
   )
@@ -173,6 +173,6 @@ const main = async () => {
 }
 
 main().catch((err) => {
-  console.error(err.message)
+  console.error(err)
   process.exit(1)
 })
